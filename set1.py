@@ -1,4 +1,5 @@
 import base64
+import csv
 import sys
 
 
@@ -21,6 +22,16 @@ def hex_xor_hex(h1, h2):
 
 
 # challenge 3
+def english_score(sentence):
+    score = 0
+    word_list = sentence.split()
+    for word in word_list:
+        if word in english_words:
+            score += 1
+
+    return score/len(word_list)
+
+
 def _single_xor_hex(h, c):
     b = bytes.fromhex(h)
 
@@ -32,23 +43,48 @@ def _single_xor_hex(h, c):
 
 
 def single_xor_hex(h):
+    score_tuples = []
     for i in range(256):
         b = _single_xor_hex(h, i)
         try:
-            if b.decode().strip().isprintable():
-                print('{}: {}'.format(chr(i), b))
+            sentence = b.decode().strip()
+            if sentence.isprintable():
+                score_tuples.append((english_score(sentence), sentence))
         except UnicodeDecodeError:
             continue
+
+    score_tuples.sort()
+    #for score, sen in score_tuples:
+    #    print(f'{score}: {sen}')
+
+    return score_tuples
 
 
 # challenge 4
 def single_xor_file():
-    for line in sys.stdin:
-        print(line.strip())
-        single_xor_hex(line.strip())
+    score_tuples = []
+    xor_lines = []
+    with open('set1-ex4.txt', 'r') as f:
+        csv_lines = csv.reader(f)
+        for row in csv_lines:
+            xor_lines.append(row[0])
+
+    for line in xor_lines:
+        for line_tuples in single_xor_hex(line.strip()):
+            score_tuples.append((line_tuples[0], line_tuples[1], line.strip()))
+
+    score_tuples.sort()
+    for score, sen, line in score_tuples:
+        print(f'{score}: {sen} ({line})')
 
 
 if __name__ == '__main__':
+    english_words = []
+    with open('words.txt', 'r') as f:
+        csv_lines = csv.reader(f)
+        for word in csv_lines:
+            english_words.append(word[0])
+
     if sys.argv[1] == '1':
         print(hex_to_base64(sys.argv[2]).decode())
         # b"I'm killing your brain like a poisonous mushroom"
