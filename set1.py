@@ -78,6 +78,22 @@ def single_xor_file():
         print(f'{score}: {sen} ({line})')
 
 
+# challenge 5
+def repeating_key_xor(f, key):
+    with open(f, 'r') as myfile:
+        data = myfile.read()
+
+    b_string = data.strip().encode()
+    b_key = key.encode()
+    key_pos = 0
+    cipher = b''
+    for b in b_string:
+        cipher += bytes([b ^ b_key[key_pos]])
+        key_pos = (key_pos + 1) % len(b_key)
+
+    return cipher.hex()
+
+
 if __name__ == '__main__':
     english_words = []
     with open('words.txt', 'r') as f:
@@ -101,3 +117,6 @@ if __name__ == '__main__':
         single_xor_file()
         # 7b5a4215415d544115415d5015455447414c155c46155f4058455c5b523f
         # 5: b'Now that the party is jumping\n'
+
+    elif sys.argv[1] == '5':
+        print(repeating_key_xor(sys.argv[2], sys.argv[3]))
